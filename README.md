@@ -1,0 +1,1 @@
+# car_license_plate_recognition_with_yolov8_and_easyocr
