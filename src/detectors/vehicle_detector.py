@@ -4,13 +4,16 @@ from pathlib import Path
 
 
 class VehicleDetector:
-    def __init__(self, model_path=os.path.join("models", "license_plate_detector.pt")):
+    def __init__(
+        self, model_path=os.path.join("models", "license_plate_detector.pt"), device="cpu"
+    ):
         self.model = YOLO(model=model_path)
+        self.device = device
         self.vehicale_classes = {2, 3, 5, 7}
 
     def detect(self, frame):
         detections_ = []
-        detections = self.model(frame)[0]
+        detections = self.model(frame, device=self.device)[0]
 
         # @QUESTION: Well how do we known to extract the data list like this "detections.boxes.data.tolist()" :))?
         for x1, y1, x2, y2, score, class_id in detections.boxes.data.tolist():

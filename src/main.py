@@ -21,18 +21,29 @@ def main(max_frames=None, use_kaggle=0):
                                     If None, processes all frames.
     """
     # Paths
-    video_path = os.path.join("..", "..", "input", "sample", "sample.mp4") if use_kaggle else os.path.join("data", "sample.mp4")
+    video_path = (
+        os.path.join("..", "..", "input", "sample", "sample.mp4")
+        if use_kaggle
+        else os.path.join("data", "sample.mp4")
+    )
     output_csv = os.path.join("results", "test.csv")
     interpolated_csv = os.path.join("results", "test_interpolated.csv")
-    output_video = os.path.join("results", "out.mp4") 
+    output_video = os.path.join("results", "out.mp4")
+
+    # Set device based on use_kaggle (GPU on Kaggle, CPU locally)
+    device = "cuda" if use_kaggle else "cpu"
+    use_gpu = bool(use_kaggle)
+    print(f"Using device: {device}")
 
     # Initialize components
     print("Initializing components...")
     cap = cv2.VideoCapture(video_path)
-    vehicle_detector = VehicleDetector()
-    plate_detector = LicensePlateDetector(os.path.join("models", "license_plate_detector.pt"))
+    vehicle_detector = VehicleDetector(device=device)
+    plate_detector = LicensePlateDetector(
+        os.path.join("models", "license_plate_detector.pt"), device=device
+    )
     tracker = VehicleTracker()
-    reader = LicensePlateReader()
+    reader = LicensePlateReader(use_gpu=use_gpu)
     print("Components initialized.\n")
 
     # Results dictionary with nested structure
@@ -130,10 +141,18 @@ def main(max_frames=None, use_kaggle=0):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Car License Plate Recognition")
-    parser.add_argument("--max_frames", type=int, default=None, 
-                        help="Maximum number of frames to process (default: all frames)")
-    parser.add_argument("--use_kaggle", type=int, default=0, 
-                        help="Use Kaggle paths (1) or local paths (0) (default: 0)")
-    
+    parser.add_argument(
+        "--max_frames",
+        type=int,
+        default=None,
+        help="Maximum number of frames to process (default: all frames)",
+    )
+    parser.add_argument(
+        "--use_kaggle",
+        type=int,
+        default=0,
+        help="Use Kaggle paths (1) or local paths (0) (default: 0)",
+    )
+
     args = parser.parse_args()
     main(max_frames=args.max_frames, use_kaggle=args.use_kaggle)
